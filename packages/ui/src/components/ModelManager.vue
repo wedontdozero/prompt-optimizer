@@ -1,15 +1,13 @@
 <template>
   <div
     v-if="show"
-    class="fixed inset-0 theme-mask z-[60] flex items-center justify-center overflow-y-auto"
+    class="fixed inset-0 theme-mask z-[60] flex items-center justify-center p-4"
     @click="onMainBackdropClick"
   >
     <div
-      class="relative theme-manager-container w-full max-w-3xl m-4"
+      class="relative theme-manager-container w-full max-w-3xl max-h-[90vh] m-4 flex flex-col overflow-hidden"
     >
-      <div class="p-6 space-y-6">
-        <!-- 标题和关闭按钮 -->
-        <div class="flex items-center justify-between">
+      <div class="flex items-center justify-between p-6 border-b theme-manager-border flex-none">
           <h2 class="text-xl font-semibold theme-manager-text">{{ t('modelManager.title') }}</h2>
           <button
             @click="close"
@@ -18,6 +16,9 @@
             ×
           </button>
         </div>
+
+        <!-- 可滚动内容区域 -->
+        <div class="flex-1 min-h-0 p-6 overflow-y-auto">
 
         <!-- 已启用模型列表 -->
         <div class="space-y-3">
@@ -129,10 +130,18 @@
                           :placeholder="t('modelManager.displayNamePlaceholder')" />
                   </div>
                   <div>
-                    <label class="block text-sm font-medium theme-manager-text mb-1.5">{{ t('modelManager.apiUrl') }}</label>
+                    <label class="block text-sm font-medium theme-manager-text mb-1.5">{{ t('modelManager.apiUrl') }}
+                      <span class="cursor-help ml-1" :title="t('modelManager.apiUrlHint')">?</span>
+                    </label>
                     <input v-model="editingModel.baseURL" type="url" required
                           class="theme-manager-input"
                           :placeholder="t('modelManager.apiUrlPlaceholder')" />
+                  </div>
+                  <div>
+                    <label class="block text-sm font-medium theme-manager-text mb-1.5">{{ t('modelManager.apiKey') }}</label>
+                    <input v-model="editingModel.apiKey" type="text"
+                          class="theme-manager-input"
+                          :placeholder="t('modelManager.apiKeyPlaceholder')" />
                   </div>
                   <div>
                     <label class="block text-sm font-medium theme-manager-text mb-1.5">{{ t('modelManager.defaultModel') }}</label>
@@ -148,22 +157,28 @@
                       @fetch-options="handleFetchEditingModels"
                     />
                   </div>
-                  <div>
-                    <label class="block text-sm font-medium theme-manager-text mb-1.5">{{ t('modelManager.apiKey') }}</label>
-                    <input v-model="editingModel.apiKey" type="text"
-                          class="theme-manager-input"
-                          :placeholder="t('modelManager.apiKeyPlaceholder')" />
-                  </div>
                   <div v-if="vercelProxyAvailable" class="flex items-center space-x-2">
-                    <input 
-                      :id="`vercel-proxy-${editingModel.key}`" 
-                      v-model="editingModel.useVercelProxy" 
+                    <input
+                      :id="`vercel-proxy-${editingModel.key}`"
+                      v-model="editingModel.useVercelProxy"
                       type="checkbox"
                       class="w-4 h-4 text-purple-600 bg-black/20 border-purple-600/50 rounded focus:ring-purple-500/50"
                     />
                     <label :for="`vercel-proxy-${editingModel.key}`" class="text-sm font-medium theme-manager-text">
                       {{ t('modelManager.useVercelProxy') }}
                       <span class="cursor-help ml-1" :title="t('modelManager.useVercelProxyHint')">?</span>
+                    </label>
+                  </div>
+                  <div v-if="dockerProxyAvailable" class="flex items-center space-x-2">
+                    <input
+                      :id="`docker-proxy-${editingModel.key}`"
+                      v-model="editingModel.useDockerProxy"
+                      type="checkbox"
+                      class="w-4 h-4 text-blue-600 bg-black/20 border-blue-600/50 rounded focus:ring-blue-500/50"
+                    />
+                    <label :for="`docker-proxy-${editingModel.key}`" class="text-sm font-medium theme-manager-text">
+                      {{ t('modelManager.useDockerProxy') }}
+                      <span class="cursor-help ml-1" :title="t('modelManager.useDockerProxyHint')">?</span>
                     </label>
                   </div>
 
@@ -322,10 +337,18 @@
                           :placeholder="t('modelManager.displayNamePlaceholder')" />
                   </div>
                   <div>
-                    <label class="block text-sm font-medium theme-manager-text mb-1.5">{{ t('modelManager.apiUrl') }}</label>
+                    <label class="block text-sm font-medium theme-manager-text mb-1.5">{{ t('modelManager.apiUrl') }}
+	                      <span class="cursor-help ml-1" :title="t('modelManager.apiUrlHint')">?</span>
+	                    </label>
                     <input v-model="newModel.baseURL" type="url" required
                           class="theme-manager-input"
                           :placeholder="t('modelManager.apiUrlPlaceholder')" />
+                  </div>
+                  <div>
+                    <label class="block text-sm font-medium theme-manager-text mb-1.5">{{ t('modelManager.apiKey') }}</label>
+                    <input v-model="newModel.apiKey" type="password"
+                          class="theme-manager-input"
+                          :placeholder="t('modelManager.apiKeyPlaceholder')" />
                   </div>
                   <div>
                     <label class="block text-sm font-medium theme-manager-text mb-1.5">{{ t('modelManager.defaultModel') }}</label>
@@ -341,22 +364,28 @@
                       @fetch-options="handleFetchNewModels"
                     />
                   </div>
-                  <div>
-                    <label class="block text-sm font-medium theme-manager-text mb-1.5">{{ t('modelManager.apiKey') }}</label>
-                    <input v-model="newModel.apiKey" type="password"
-                          class="theme-manager-input"
-                          :placeholder="t('modelManager.apiKeyPlaceholder')" />
-                  </div>
                   <div v-if="vercelProxyAvailable" class="flex items-center space-x-2">
-                    <input 
-                      id="new-model-vercel-proxy" 
-                      v-model="newModel.useVercelProxy" 
+                    <input
+                      id="new-model-vercel-proxy"
+                      v-model="newModel.useVercelProxy"
                       type="checkbox"
                       class="w-4 h-4 text-purple-600 bg-black/20 border-purple-600/50 rounded focus:ring-purple-500/50"
                     />
                     <label for="new-model-vercel-proxy" class="text-sm font-medium theme-manager-text">
                       {{ t('modelManager.useVercelProxy') }}
                       <span class="cursor-help ml-1" :title="t('modelManager.useVercelProxyHint')">?</span>
+                    </label>
+                  </div>
+                  <div v-if="dockerProxyAvailable" class="flex items-center space-x-2">
+                    <input
+                      id="new-model-docker-proxy"
+                      v-model="newModel.useDockerProxy"
+                      type="checkbox"
+                      class="w-4 h-4 text-blue-600 bg-black/20 border-blue-600/50 rounded focus:ring-blue-500/50"
+                    />
+                    <label for="new-model-docker-proxy" class="text-sm font-medium theme-manager-text">
+                      {{ t('modelManager.useDockerProxy') }}
+                      <span class="cursor-help ml-1" :title="t('modelManager.useDockerProxyHint')">?</span>
                     </label>
                   </div>
                    <!-- Advanced Parameters Section FOR ADD MODEL -->
@@ -489,11 +518,13 @@
 <script setup>
 import { ref, onMounted, watch, computed, inject } from 'vue'; // Added computed and inject
 import { useI18n } from 'vue-i18n';
-import { 
+import {
   createLLMService,
   advancedParameterDefinitions,
   checkVercelApiAvailability,
-  resetVercelStatusCache
+  resetVercelStatusCache,
+  checkDockerApiAvailability,
+  resetDockerStatusCache
 } from '@prompt-optimizer/core';
 import { useToast } from '../composables/useToast';
 import InputWithSelect from './InputWithSelect.vue'
@@ -540,6 +571,8 @@ const isLoadingModels = ref(false);
 const testingConnections = ref({});
 // 是否支持Vercel代理
 const vercelProxyAvailable = ref(false);
+// 是否支持Docker代理
+const dockerProxyAvailable = ref(false);
 // For Advanced Parameters UI
 const selectedNewLLMParamId = ref(''); // Stores ID of param selected from dropdown
 const customLLMParam = ref({ key: '', value: '' });
@@ -557,6 +590,7 @@ const newModel = ref({
   defaultModel: '',
   apiKey: '',
   useVercelProxy: false,
+  useDockerProxy: false,
   provider: 'custom',
   llmParams: {}
 });
@@ -574,6 +608,21 @@ const checkVercelProxy = async () => {
   } catch (error) {
     console.log('Vercel代理不可用:', error);
     vercelProxyAvailable.value = false;
+  }
+};
+
+// 检测Docker代理是否可用
+const checkDockerProxy = async () => {
+  try {
+    // 先重置缓存，确保每次都重新检测
+    resetDockerStatusCache();
+    // 使用core中的检测函数
+    const available = await checkDockerApiAvailability();
+    dockerProxyAvailable.value = available;
+    console.log('Docker代理检测结果:', dockerProxyAvailable.value);
+  } catch (error) {
+    console.log('Docker代理不可用:', error);
+    dockerProxyAvailable.value = false;
   }
 };
 
@@ -718,6 +767,7 @@ const editModel = async (key) => {
       displayMaskedKey: true,
       originalApiKey: model.apiKey,
       useVercelProxy: model.useVercelProxy === undefined ? false : model.useVercelProxy, // Ensure default
+      useDockerProxy: model.useDockerProxy === undefined ? false : model.useDockerProxy, // Ensure default
       provider: model.provider || 'custom', // Ensure provider is set
       enabled: model.enabled,
       llmParams: model.llmParams ? JSON.parse(JSON.stringify(model.llmParams)) : {} // Deep copy llmParams
@@ -732,79 +782,47 @@ const editModel = async (key) => {
   }
 };
 
-// 获取编辑中模型的可用模型列表
-const fetchAvailableModels = async (providerKey, apiUrl, apiKey) => {
-  isLoadingModels.value = true;
-  modelOptions.value = [];
-  
-  try {
-    // Check if the provider has fetchModelList capability
-    const llm = createLLMService(modelManager);
-    
-    // Only attempt to fetch if we have the necessary credentials
-    if (apiUrl && apiKey) {
-      const models = await llm.fetchModelList(providerKey, {
-        baseURL: apiUrl,
-        apiKey: apiKey
-      });
-      
-      if (models && models.length > 0) {
-        modelOptions.value = models.map(model => ({
-          label: model.id,
-          value: model.id
-        }));
-      } else {
-        // If no models returned, add common ones as fallback
-        addDefaultModelOptions(providerKey);
-      }
-    } else {
-      // If missing credentials, add common ones as fallback
-      addDefaultModelOptions(providerKey);
+
+// 公共错误处理函数
+const handleModelFetchError = (error) => {
+  console.error('获取模型列表失败:', error);
+
+  // 获取错误信息
+  const errorMessage = error && error.message ? error.message : '未知错误';
+
+  // 根据标准化的错误类型进行国际化处理
+  let userMessage = '';
+
+  if (errorMessage.includes('CROSS_ORIGIN_CONNECTION_FAILED:')) {
+    userMessage = t('modelManager.errors.crossOriginConnectionFailed');
+    // 只在有可用代理时才建议使用代理
+    const availableProxies = [];
+    if (vercelProxyAvailable.value) availableProxies.push('Vercel代理');
+    if (dockerProxyAvailable.value) availableProxies.push('Docker代理');
+
+    if (availableProxies.length > 0) {
+      userMessage += t('modelManager.errors.proxyHint', { proxies: availableProxies.join('或') });
     }
-  } catch (error) {
-    console.error('Failed to fetch models:', error);
-    // Add common models as fallback
-    addDefaultModelOptions(providerKey);
-  } finally {
-    isLoadingModels.value = false;
-  }
-};
-const addDefaultModelOptions = (providerKey) => {
-  if (providerKey === 'openai') {
-    modelOptions.value = [
-      { label: 'gpt-4o', value: 'gpt-4o' },
-      { label: 'gpt-4-turbo', value: 'gpt-4-turbo' },
-      { label: 'gpt-4', value: 'gpt-4' },
-      { label: 'gpt-3.5-turbo', value: 'gpt-3.5-turbo' }
-    ];
-  } else if (providerKey === 'anthropic') {
-    modelOptions.value = [
-      { label: 'claude-3-opus-20240229', value: 'claude-3-opus-20240229' },
-      { label: 'claude-3-sonnet-20240229', value: 'claude-3-sonnet-20240229' },
-      { label: 'claude-3-haiku-20240307', value: 'claude-3-haiku-20240307' },
-      { label: 'claude-2.1', value: 'claude-2.1' }
-    ];
-  } else if (providerKey === 'gemini') {
-    modelOptions.value = [
-      { label: 'gemini-pro', value: 'gemini-pro' },
-      { label: 'gemini-1.5-pro', value: 'gemini-1.5-pro' }
-    ];
-  } else if (providerKey === 'deepseek') {
-    modelOptions.value = [
-      { label: 'deepseek-chat', value: 'deepseek-chat' },
-      { label: 'deepseek-coder', value: 'deepseek-coder' }
-    ];
-  } else if (providerKey === 'zhipu') {
-    modelOptions.value = [
-      { label: 'GLM-4-Flash', value: 'glm-4-flash' },
-      { label: 'GLM-4', value: 'glm-4' },
-      { label: 'GLM-3-Turbo', value: 'glm-3-turbo' },
-      { label: 'GLM-3', value: 'glm-3' }
-    ];
+  } else if (errorMessage.includes('CONNECTION_FAILED:')) {
+    userMessage = t('modelManager.errors.connectionFailed');
+  } else if (errorMessage.includes('MISSING_V1_SUFFIX:')) {
+    userMessage = t('modelManager.errors.missingV1Suffix');
+  } else if (errorMessage.includes('INVALID_RESPONSE_FORMAT:')) {
+    userMessage = t('modelManager.errors.invalidResponseFormat');
+  } else if (errorMessage.includes('EMPTY_MODEL_LIST:')) {
+    userMessage = t('modelManager.errors.emptyModelList');
+  } else if (errorMessage.includes('API_ERROR:')) {
+    // 提取API_ERROR:后面的内容
+    const apiErrorStart = errorMessage.indexOf('API_ERROR:') + 10;
+    userMessage = t('modelManager.errors.apiError', { error: errorMessage.substring(apiErrorStart) });
   } else {
-    // For custom models, provide empty list
-    modelOptions.value = [];
+    userMessage = errorMessage; // 其他错误直接显示
   }
+
+  toast.error(userMessage);
+
+  // 清空模型选项，让用户知道获取失败
+  modelOptions.value = [];
 };
 
 const handleFetchEditingModels = async () => {
@@ -841,7 +859,8 @@ const handleFetchEditingModels = async () => {
       baseURL: baseURL,
       apiKey: apiKey,
       provider: editingModel.value.provider || 'custom',
-      useVercelProxy: editingModel.value.useVercelProxy
+      useVercelProxy: editingModel.value.useVercelProxy,
+      useDockerProxy: editingModel.value.useDockerProxy
     };
     
     // 确定要使用的 provider key（使用原始key或临时key）
@@ -850,28 +869,17 @@ const handleFetchEditingModels = async () => {
     // 获取模型列表
     const models = await llmService.fetchModelList(providerKey, customConfig);
     
-    if (models.length > 0) {
-      modelOptions.value = models;
-      toast.success(t('modelManager.fetchModelsSuccess', {count: models.length}));
+    // 现在后端会在没有模型时直接抛出错误，所以这里只处理成功的情况
+    modelOptions.value = models;
+    toast.success(t('modelManager.fetchModelsSuccess', {count: models.length}));
 
-      // 如果当前选择的模型不在列表中，默认选择第一个
-      if (!models.some(m => m.value === editingModel.value.defaultModel)) {
-        editingModel.value.defaultModel = models[0].value;
-      }
-    } else {
-      toast.warning(t('modelManager.noModelsAvailable'));
-      addDefaultModelOptions(providerKey);
+    // 如果当前选择的模型不在列表中，默认选择第一个
+    if (models.length > 0 && !models.some(m => m.value === editingModel.value.defaultModel)) {
+      editingModel.value.defaultModel = models[0].value;
     }
   } catch (error) {
-    console.error('获取模型列表失败:', error);
-    toast.error(t('modelManager.fetchModelsFailed', {error: error.message}));
-    
-    // 使用提供商特定的默认选项
-    if (editingModel.value.originalKey) {
-      addDefaultModelOptions(editingModel.value.originalKey);
-    } else {
-      addDefaultModelOptions('custom');
-    }
+    // 使用公共错误处理函数
+    handleModelFetchError(error);
   } finally {
     isLoadingModels.value = false;
   }
@@ -902,28 +910,24 @@ const handleFetchNewModels = async () => {
       baseURL: baseURL,
       apiKey: apiKey,
       provider: currentProviderType.value || 'custom',
-      useVercelProxy: newModel.value.useVercelProxy
+      useVercelProxy: newModel.value.useVercelProxy,
+      useDockerProxy: newModel.value.useDockerProxy
     };
     
     // 获取模型列表
     const models = await llmService.fetchModelList(provider, customConfig);
     
-    if (models.length > 0) {
-      modelOptions.value = models;
-      toast.success(t('modelManager.fetchModelsSuccess', {count: models.length}));
+    // 现在后端会在没有模型时直接抛出错误，所以这里只处理成功的情况
+    modelOptions.value = models;
+    toast.success(t('modelManager.fetchModelsSuccess', {count: models.length}));
 
-      // 默认选择第一个模型
+    // 默认选择第一个模型
+    if (models.length > 0) {
       newModel.value.defaultModel = models[0].value;
-    } else {
-      toast.warning(t('modelManager.noModelsAvailable'));
-      addDefaultModelOptions('custom');
     }
   } catch (error) {
-    console.error('获取模型列表失败:', error);
-    toast.error(t('modelManager.fetchModelsFailed', {error: error.message}));
-    
-    // 添加默认选项
-    addDefaultModelOptions('custom');
+    // 使用公共错误处理函数
+    handleModelFetchError(error);
   } finally {
     isLoadingModels.value = false;
   }
@@ -959,6 +963,7 @@ const saveEdit = async () => {
         ? modelOptions.value.map(opt => opt.value)
         : [editingModel.value.defaultModel],
       useVercelProxy: editingModel.value.useVercelProxy,
+      useDockerProxy: editingModel.value.useDockerProxy,
       provider: editingModel.value.provider || 'custom',
       enabled: editingModel.value.enabled !== undefined
         ? editingModel.value.enabled
@@ -1003,6 +1008,7 @@ const addCustomModel = async () => {
       enabled: true,
       provider: currentProviderType.value || 'custom',
       useVercelProxy: newModel.value.useVercelProxy,
+      useDockerProxy: newModel.value.useDockerProxy,
       llmParams: newModel.value.llmParams || {}
     }
 
@@ -1018,6 +1024,7 @@ const addCustomModel = async () => {
       defaultModel: '',
       apiKey: '',
       useVercelProxy: false,
+      useDockerProxy: false,
       provider: 'custom',
       llmParams: {}
     }
@@ -1246,6 +1253,7 @@ watch(() => newModel.value.key, (newKey) => {
 onMounted(() => {
   loadModels();
   checkVercelProxy();
+  checkDockerProxy();
 });
 </script>
 

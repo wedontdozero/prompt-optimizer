@@ -125,11 +125,14 @@ export default {
     displayName: 'Display Name',
     modelKey: 'Model Key',
     apiUrl: 'API URL',
+    apiUrlHint: 'Example: https://api.example.com/v1; most providers use endpoints ending with /v1',
     defaultModel: 'Default Model',
     clickToFetchModels: 'Click arrow to fetch model list',
     apiKey: 'API Key',
     useVercelProxy: 'Use Vercel Proxy',
     useVercelProxyHint: 'Using Vercel proxy can solve CORS issues, but may trigger risk control from some providers. Please use with caution',
+    useDockerProxy: 'Use Docker Proxy',
+    useDockerProxyHint: 'Using Docker proxy can solve CORS issues, suitable for Docker deployment environments',
     addModel: 'Add',
 
     // Advanced Parameters
@@ -189,6 +192,17 @@ export default {
     needApiKeyAndBaseUrl: 'Please fill API key and base URL first',
     needBaseUrl: 'Please fill in API URL first',
 
+    // Error handling for model fetching
+    errors: {
+      crossOriginConnectionFailed: 'Cross-origin connection failed. Please check network connection',
+      connectionFailed: 'Connection failed. Please check API address and network connection',
+      missingV1Suffix: 'API URL format error. OpenAI-compatible APIs should include "/v1" suffix',
+      invalidResponseFormat: 'API response format incompatible. Please check if API service uses OpenAI-compatible format',
+      emptyModelList: 'API returned empty model list. This service may have no available models',
+      apiError: 'API error: {error}',
+      proxyHint: ', or try enabling {proxies}'
+    },
+
     // Status Text
     disabled: 'Disabled',
 
@@ -203,6 +217,7 @@ export default {
     defaultModelAriaLabel: 'Default model name',
     apiKeyAriaLabel: 'API key',
     useVercelProxyAriaLabel: 'Use Vercel proxy',
+    useDockerProxyAriaLabel: 'Use Docker proxy',
     cancelEditAriaLabel: 'Cancel editing model',
     saveEditAriaLabel: 'Save model changes',
     cancelAddAriaLabel: 'Cancel adding model',
